@@ -1,4 +1,4 @@
-package com.tujuhsembilan.springboot_boilerplate.dto;
+package com.skpijtk.springboot_boilerplate.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

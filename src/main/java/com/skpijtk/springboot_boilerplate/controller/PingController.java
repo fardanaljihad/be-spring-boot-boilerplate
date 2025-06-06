@@ -1,4 +1,4 @@
-package com.tujuhsembilan.springboot_boilerplate.controller;
+package com.skpijtk.springboot_boilerplate.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

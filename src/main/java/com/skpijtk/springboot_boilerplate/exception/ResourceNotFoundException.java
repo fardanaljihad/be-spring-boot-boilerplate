@@ -1,4 +1,4 @@
-package com.tujuhsembilan.springboot_boilerplate.exception;
+package com.skpijtk.springboot_boilerplate.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
