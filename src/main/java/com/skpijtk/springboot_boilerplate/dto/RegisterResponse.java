@@ -11,9 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RegisterResponse {
     
-    private Object data;
-    private Object message;
-    private int statusCode;
-    private String status;
+    private String email;
 
 }
