@@ -12,6 +12,7 @@ public class ErrorResponse {
     private int status;
     private String error;
     private String message;
+    private String messageId;
     private String path;
     private List<String> details;
 }
