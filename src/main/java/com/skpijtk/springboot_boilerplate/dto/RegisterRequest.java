@@ -2,6 +2,7 @@ package com.skpijtk.springboot_boilerplate.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,16 +16,19 @@ import lombok.NoArgsConstructor;
 public class RegisterRequest {
     
     @NotBlank(message = "Name cannot be blank")
-    @Size(min = 3, max = 100, message = "Name must be between 3 and 100 characters")
+    @Size(min = 1, max = 50, message = "Name must be between 1 and 50 characters")
     private String name;
 
     @NotBlank(message = "Email cannot be blank")
     @Email(message = "Invalid email format")
-    @Size(max = 150)
+    @Size(min = 1, max = 50)
     private String email;
 
     @NotBlank(message = "Password cannot be blank")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
+    @Pattern(
+        regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,12}$",
+        message = "Password must have a combination of numbers and letters, between 6 and 12 characters, and no spaces or special characters"
+    )
     private String password;
 
 }

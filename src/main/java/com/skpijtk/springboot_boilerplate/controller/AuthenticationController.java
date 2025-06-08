@@ -28,7 +28,7 @@ public class AuthenticationController {
     private final AuthenticationService service;
     
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<RegisterResponse>> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponse<RegisterResponse>> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(service.register(request));
     }
     

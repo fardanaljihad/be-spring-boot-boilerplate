@@ -1,6 +1,8 @@
 package com.skpijtk.springboot_boilerplate.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.Size;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.skpijtk.springboot_boilerplate.dto.ErrorResponse;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -46,24 +49,35 @@ public class GlobalExceptionHandler {
         public ResponseEntity<ErrorResponse> handleValidationExceptions(
                 MethodArgumentNotValidException ex, HttpServletRequest request) {
 
-                final int MIN_LENGTH = 6;
-                final int MAX_LENGTH = 12;
+                int min_length = 6;
+                int max_length = 12;
                 String message = "";
-                String messageId = "";
+                String messageId = "T-ERR-001";
 
                 for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-                        String field = error.getField();
+                        String fieldName = error.getField();
                         String defaultMessage = error.getDefaultMessage();
-                        // String code = error.getCode();
                         Object rejected = error.getRejectedValue();
                         int inputLength = rejected != null ? rejected.toString().length() : 0;
 
-                        if (inputLength > MAX_LENGTH) {
-                                message = field + " must be at most " + MAX_LENGTH + " characters";
+                        Object target = ex.getBindingResult().getTarget();
+                        try {
+                                Field field = target.getClass().getDeclaredField(fieldName);
+                                Size size = field.getAnnotation(Size.class);
+                                if (size != null) {
+                                        min_length = size.min();
+                                        max_length = size.max();
+                                }
+                        } catch (NoSuchFieldException e) {
+                                e.printStackTrace();
+                        }
+
+                        if (inputLength > max_length) {
+                                message = fieldName + " must be at most " + max_length + " characters";
                                 messageId = "T-ERR-003";
                         }
-                        else if (inputLength < MIN_LENGTH) {
-                                message = field + " must be at least " + MIN_LENGTH + " characters";
+                        else if (inputLength < min_length) {
+                                message = fieldName + " must be at least " + min_length + " characters";
                                 messageId = "T-ERR-004";
                         }
                         else {
