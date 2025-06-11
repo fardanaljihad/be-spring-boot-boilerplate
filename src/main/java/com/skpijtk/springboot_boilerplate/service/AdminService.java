@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.skpijtk.springboot_boilerplate.dto.ApiResponse;
 import com.skpijtk.springboot_boilerplate.exception.ResourceNotFoundException;
 import com.skpijtk.springboot_boilerplate.model.User;
+import com.skpijtk.springboot_boilerplate.repository.StudentRepository;
 import com.skpijtk.springboot_boilerplate.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminService {
 
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
 
     public ApiResponse<Object> getProfile() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -41,6 +43,22 @@ public class AdminService {
 
         ApiResponse<Object> response = ApiResponse.builder()
             .data(profileData)
+            .message("T-SUCC-005")
+            .statusCode(HttpStatus.OK.value())
+            .status(HttpStatus.OK.name())
+            .build();
+
+        return response;
+    }
+
+    public ApiResponse<Object> getTotalMahasiswa() {
+        long totalMahasiswa = studentRepository.count();
+
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("total_mahasiswa", totalMahasiswa);
+
+        ApiResponse<Object> response = ApiResponse.builder()
+            .data(responseData)
             .message("T-SUCC-005")
             .statusCode(HttpStatus.OK.value())
             .status(HttpStatus.OK.name())

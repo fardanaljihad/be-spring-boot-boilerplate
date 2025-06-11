@@ -23,5 +23,11 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Object>> getProfile() {
         return ResponseEntity.ok(adminService.getProfile());
     }
+
+    @GetMapping("/total_mahasiswa")
+    public ResponseEntity<ApiResponse<Object>> getTotalMahasiswa() {
+        return ResponseEntity.ok(adminService.getTotalMahasiswa());
+    }
+    
     
 }
