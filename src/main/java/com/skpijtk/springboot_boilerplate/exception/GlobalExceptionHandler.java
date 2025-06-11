@@ -117,20 +117,21 @@ public class GlobalExceptionHandler {
 
 
 
-        // @ExceptionHandler(ResourceNotFoundException.class)
-        // public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
-        //                 ResourceNotFoundException ex, HttpServletRequest request) {
+        @ExceptionHandler(ResourceNotFoundException.class)
+        public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
+                        ResourceNotFoundException ex, HttpServletRequest request) {
 
-        //         log.warn("Resource not found: {} on path {}", ex.getMessage(), request.getRequestURI());
-        //         ErrorResponse errorResponse = new ErrorResponse(
-        //                         LocalDateTime.now(),
-        //                         HttpStatus.NOT_FOUND.value(),
-        //                         HttpStatus.NOT_FOUND.getReasonPhrase(),
-        //                         ex.getMessage(),
-        //                         request.getRequestURI(),
-        //                         null);
-        //         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-        // }
+                log.warn("Resource not found: {} on path {}", ex.getMessage(), request.getRequestURI());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.NOT_FOUND.value(),
+                                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                                ex.getMessage(),
+                                ex.getMessageId(),
+                                request.getRequestURI(),
+                                null);
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        }
 
         // @ExceptionHandler(MethodArgumentNotValidException.class)
         // public ResponseEntity<ErrorResponse> handleValidationExceptions(

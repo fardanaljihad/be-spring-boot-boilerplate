@@ -18,7 +18,7 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
-    private final String SECRET_KEY = "F1938309275B4261CF7C2110C98B1B06E99626843DBD86B09A4FF4C486991A6690F587E69AFBF4B7E150993F7087AAE1";
+    private final String SECRET_KEY = "Zy8BSr4fqzYYgCQL20PP9ePo/LLRz9nHIuRrgJcwP6w=";
     
     public String extractUsername(String token) {
         return extractClaims(token, Claims::getSubject); // Subject is username or email
@@ -39,7 +39,7 @@ public class JwtService {
             .setClaims(extraClaims)
             .setSubject(userDetails.getUsername())
             .setIssuedAt(new Date(System.currentTimeMillis()))
-            .setExpiration(new Date(System.currentTimeMillis() * 1000 * 60 * 8))
+            .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 1))
             .signWith(getSignInKey(), SignatureAlgorithm.HS256)
             .compact();
     }
