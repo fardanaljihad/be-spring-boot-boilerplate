@@ -9,6 +9,7 @@ import com.skpijtk.springboot_boilerplate.service.AdminService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 
 
@@ -19,11 +20,13 @@ public class AdminController {
     
     private final AdminService adminService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<Object>> getProfile() {
         return ResponseEntity.ok(adminService.getProfile());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/total_mahasiswa")
     public ResponseEntity<ApiResponse<Object>> getTotalMahasiswa() {
         return ResponseEntity.ok(adminService.getTotalMahasiswa());

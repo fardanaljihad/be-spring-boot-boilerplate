@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -38,6 +39,24 @@ public class GlobalExceptionHandler {
                         HttpStatus.UNAUTHORIZED.getReasonPhrase(),
                         ex.getMessage() + " / Invalid username or password",
                         "T-ERR-001",
+                        request.getRequestURI(),
+                        null
+                );
+
+                return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+        }
+
+        @ExceptionHandler(AccessDeniedException.class)
+        public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
+
+                log.warn("Access denied: {} on path {}", ex.getMessage(), request.getRequestURI());
+
+                ErrorResponse errorResponse = new ErrorResponse(
+                        LocalDateTime.now(),
+                        HttpStatus.UNAUTHORIZED.value(),
+                        HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                        ex.getMessage() + ": Role Anda tidak memiliki izin untuk mengakses endpoint ini",
+                        "T-ERR-011",
                         request.getRequestURI(),
                         null
                 );
