@@ -1,5 +1,6 @@
 package com.skpijtk.springboot_boilerplate.service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import com.skpijtk.springboot_boilerplate.dto.ApiResponse;
 import com.skpijtk.springboot_boilerplate.dto.AttendanceDto;
 import com.skpijtk.springboot_boilerplate.dto.RegisterStudentRequest;
 import com.skpijtk.springboot_boilerplate.dto.StudentResponse;
+import com.skpijtk.springboot_boilerplate.dto.UpdateStudentRequest;
 import com.skpijtk.springboot_boilerplate.exception.ResourceNotFoundException;
 import com.skpijtk.springboot_boilerplate.exception.IllegalArgumentException;
 import com.skpijtk.springboot_boilerplate.model.Attendance;
@@ -64,6 +66,37 @@ public class StudentService {
             .message("T-SUCC-008: Data successfully saved")
             .statusCode(HttpStatus.CREATED.value())
             .status(HttpStatus.CREATED.name())
+            .build();
+    }
+
+    public ApiResponse<StudentResponse> updateStudent(long studentId, UpdateStudentRequest request) {
+        Student student = studentRepository.findById(studentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found", "T-ERR-005"));
+
+        User user = student.getUser();
+
+        if (!user.getEmail().equals(request.getEmail()) &&
+            userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Email already in use", "T-ERR-010");
+        }
+
+        if (!student.getNim().equals(request.getNim()) &&
+            studentRepository.existsByNim(request.getNim())) {
+            throw new IllegalArgumentException("NIM already in use", "T-ERR-010");
+        }
+
+        user.setName(request.getStudentName());
+        user.setEmail(request.getEmail());
+        student.setNim(request.getNim());
+        student.setUpdatedAt(LocalDateTime.now());
+
+        userRepository.save(user);
+
+        return ApiResponse.<StudentResponse>builder()
+            .data(toStudentResponse(student))
+            .message("T-SUCC-008: Data successfully updated")
+            .statusCode(HttpStatus.OK.value())
+            .status(HttpStatus.OK.name())
             .build();
     }
     

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +20,7 @@ import com.skpijtk.springboot_boilerplate.dto.CheckInAllStudentsResponse;
 import com.skpijtk.springboot_boilerplate.dto.PaginationDto;
 import com.skpijtk.springboot_boilerplate.dto.RegisterStudentRequest;
 import com.skpijtk.springboot_boilerplate.dto.StudentResponse;
+import com.skpijtk.springboot_boilerplate.dto.UpdateStudentRequest;
 import com.skpijtk.springboot_boilerplate.service.AttendanceService;
 import com.skpijtk.springboot_boilerplate.service.StudentService;
 
@@ -65,6 +67,15 @@ public class StudentController {
         @RequestParam(defaultValue = "10") int size
     ) {
         return ResponseEntity.ok(attendanceService.getListAttendanceStudent(student_id, startdate, enddate, page, size));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/edit-mahasiswa/{id_student}")
+    public ResponseEntity<ApiResponse<StudentResponse>> updateStudent(
+        @PathVariable("id_student") long studentId,
+        @Valid @RequestBody UpdateStudentRequest request
+    ) {
+        return ResponseEntity.ok(studentService.updateStudent(studentId, request));
     }
     
     @PreAuthorize("hasRole('ADMIN')")
