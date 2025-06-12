@@ -119,6 +119,11 @@ public class GlobalExceptionHandler {
                         .map(entry -> entry.getKey() + ": " + entry.getValue())
                         .collect(Collectors.toList());
 
+                if (request.getRequestURI().equals("/api/v1/admin/add-mahasiswa")) {
+                        message = "Data failed to saved";
+                        messageId = "T-ERR-010";
+                }
+
                 log.warn("Validation error(s): {} on path {}", details, request.getRequestURI());
 
                 ErrorResponse errorResponse = new ErrorResponse(

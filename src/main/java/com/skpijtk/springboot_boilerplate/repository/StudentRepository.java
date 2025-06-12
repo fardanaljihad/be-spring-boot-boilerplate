@@ -6,4 +6,6 @@ import com.skpijtk.springboot_boilerplate.model.Student;
 
 public interface StudentRepository extends JpaRepository<Student, Long> {
     
+    boolean existsByNim(String nim);
+    
 }

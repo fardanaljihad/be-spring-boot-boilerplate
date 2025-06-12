@@ -1,6 +1,7 @@
 package com.skpijtk.springboot_boilerplate.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
@@ -43,5 +44,6 @@ public class Student {
     @OneToMany(
         mappedBy = "student"
     )
-    private List<Attendance> attendances;
+    @Builder.Default
+    private List<Attendance> attendances = new ArrayList<>();
 }
