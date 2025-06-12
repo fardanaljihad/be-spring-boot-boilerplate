@@ -24,13 +24,6 @@ public class AdminController {
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<Object>> getProfile() {
         return ResponseEntity.ok(adminService.getProfile());
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/total_mahasiswa")
-    public ResponseEntity<ApiResponse<Object>> getTotalMahasiswa() {
-        return ResponseEntity.ok(adminService.getTotalMahasiswa());
-    }
-    
+    } 
     
 }

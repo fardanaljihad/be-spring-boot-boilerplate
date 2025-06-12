@@ -1,5 +1,8 @@
 package com.skpijtk.springboot_boilerplate.model;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +24,24 @@ public class Student {
     @Column(nullable = false, unique = true)
     private String nim;
 
-    // @OneToOne
-    // @JoinColumn(name = "user_id", nullable = false, unique = true)
-    // private User user;
+    @Builder.Default
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Builder.Default
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @OneToOne
+    @JoinColumn(
+        name = "user_id", 
+        nullable = false, 
+        unique = true
+    )
+    private User user;
+
+    @OneToMany(
+        mappedBy = "student"
+    )
+    private List<Attendance> attendances;
 }

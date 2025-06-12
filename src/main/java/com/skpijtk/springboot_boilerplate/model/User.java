@@ -47,11 +47,11 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // @OneToOne(
-    //     mappedBy = "user", 
-    //     cascade = CascadeType.ALL
-    // )
-    // private Student student;
+    @OneToOne(
+        mappedBy = "user", 
+        cascade = CascadeType.ALL
+    )
+    private Student student;
 
     @PreUpdate
     protected void onUpdate() {
