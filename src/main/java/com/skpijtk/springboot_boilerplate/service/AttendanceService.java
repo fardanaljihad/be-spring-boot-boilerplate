@@ -15,6 +15,7 @@ import com.skpijtk.springboot_boilerplate.dto.CheckInAllStudentsResponse;
 import com.skpijtk.springboot_boilerplate.dto.PaginationDto;
 import com.skpijtk.springboot_boilerplate.dto.ResumeCheckInResponse;
 import com.skpijtk.springboot_boilerplate.exception.IllegalArgumentException;
+import com.skpijtk.springboot_boilerplate.exception.ResourceNotFoundException;
 import com.skpijtk.springboot_boilerplate.model.Attendance;
 import com.skpijtk.springboot_boilerplate.model.CheckInStatus;
 import com.skpijtk.springboot_boilerplate.model.Student;
@@ -167,6 +168,64 @@ public class AttendanceService {
         return ApiResponse.<PaginationDto<CheckInAllStudentsResponse>>builder()
             .data(responseData)
             .message("T-SUCC-005")
+            .statusCode(HttpStatus.OK.value())
+            .status(HttpStatus.OK.name())
+            .build();
+    }
+
+    public ApiResponse<PaginationDto<CheckInAllStudentsResponse>> getListAttendanceStudent(
+        long studentId,
+        LocalDate startDate,
+        LocalDate endDate,
+        int page,
+        int size
+    ) {
+
+        studentRepository.findById(studentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Student data not found", "T-ERR-005"));
+        
+        Pageable pageable = PageRequest.of(page, size);
+
+        Specification<Attendance> spec = AttendanceSpecification.filterBy(
+            studentId, startDate, endDate
+        );
+
+        Page<Attendance> attendancePage = attendanceRepository.findAll(spec, pageable);
+
+        Page<CheckInAllStudentsResponse> resultPage = attendancePage.map(att -> {
+            Student student = att.getStudent();
+            User user = student.getUser();
+
+            return CheckInAllStudentsResponse.builder()
+                .studentId(student.getId())
+                .userId(user.getId())
+                .studentName(user.getName())
+                .nim(student.getNim())
+                .email(user.getEmail())
+                .attendanceData(AttendanceDto.builder()
+                    .attendanceId(att.getId())
+                    .attendanceDate(att.getAttendanceDate())
+                    .checkinTime(att.getCheckInTime())
+                    .checkoutTime(att.getCheckOutTime()) 
+                    .late(att.getCheckInStatus() == CheckInStatus.TERLAMBAT)
+                    .notesCheckin(att.getCheckInNotes())
+                    .notesCheckout(att.getCheckOutNotes())
+                    .status(att.getCheckInStatus().name())
+                    .build())
+                .build();
+        });
+
+        PaginationDto<CheckInAllStudentsResponse> responseData = PaginationDto.<CheckInAllStudentsResponse>builder()
+            .data(resultPage.getContent())
+            .totalData(resultPage.getTotalElements())
+            .totalPage(resultPage.getTotalPages())
+            .currentPage(resultPage.getNumber())
+            .pageSize(resultPage.getSize())
+            .build();
+
+        return ApiResponse.<PaginationDto<CheckInAllStudentsResponse>>builder()
+            .data(responseData)
+            .message("T-SUCC-004")
             .statusCode(HttpStatus.OK.value())
             .status(HttpStatus.OK.name())
             .build();
