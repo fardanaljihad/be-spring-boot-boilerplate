@@ -122,4 +122,25 @@ public class StudentService {
         ).collect(Collectors.toList());
     }
 
+    public ApiResponse<Object> deleteStudentById(Long studentId) {
+        Student student = studentRepository.findById(studentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found", "T-ERR-005"));
+
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("student_id", student.getId());
+        responseData.put("student_name", student.getUser().getName());
+        responseData.put("nim", student.getNim());
+
+        userRepository.delete(student.getUser());
+
+        ApiResponse<Object> response = ApiResponse.<Object>builder()
+            .data(responseData)
+            .message("T-SUCC-006: Student " + student.getUser().getName() + " successfully deleted")
+            .statusCode(HttpStatus.OK.value())
+            .status(HttpStatus.OK.name())
+            .build();
+
+        return response;
+    }
+
 }
