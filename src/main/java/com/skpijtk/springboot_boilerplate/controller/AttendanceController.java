@@ -34,14 +34,14 @@ public class AttendanceController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/list_checkin_mahasiswa")
     public ResponseEntity<ApiResponse<PaginationDto<CheckInAllStudentsResponse>>> getListCheckInStudents(
-            @RequestParam(required = false) String studentName,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String student_name,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startdate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate enddate,
             @RequestParam(defaultValue = "nim") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(attendanceService.getCheckInAllStudents(studentName, startDate, endDate, sortBy, sortDir, page, size));
+        return ResponseEntity.ok(attendanceService.getCheckInAllStudents(student_name, startdate, enddate, sortBy, sortDir, page, size));
     }
 }
