@@ -20,20 +20,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
-@RequestMapping("/api/v1/admin")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 @Validated
 public class AuthenticationController {
 
     private final AuthenticationService service;
     
-    @PostMapping("/signup")
+    @PostMapping("/admin/signup")
     public ResponseEntity<ApiResponse<RegisterResponse>> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(service.register(request));
     }
     
-    @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthenticationResponse>> authenticate(@Valid @RequestBody AuthenticationRequest request) {
+    @PostMapping("/admin/login")
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> authenticateAdmin(@Valid @RequestBody AuthenticationRequest request) {
+        return ResponseEntity.ok(service.authenticate(request));
+    }
+
+    @PostMapping("/mahasiswa/login")
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> authenticateStudent(@Valid @RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(service.authenticate(request));
     }
 
