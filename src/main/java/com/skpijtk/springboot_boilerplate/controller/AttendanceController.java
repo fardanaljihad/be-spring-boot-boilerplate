@@ -17,6 +17,7 @@ import com.skpijtk.springboot_boilerplate.dto.ApiResponse;
 import com.skpijtk.springboot_boilerplate.dto.CheckInAllStudentsResponse;
 import com.skpijtk.springboot_boilerplate.dto.CheckInCheckOutResponse;
 import com.skpijtk.springboot_boilerplate.dto.CheckInRequest;
+import com.skpijtk.springboot_boilerplate.dto.CheckOutRequest;
 import com.skpijtk.springboot_boilerplate.dto.PaginationDto;
 import com.skpijtk.springboot_boilerplate.dto.ResumeCheckInResponse;
 import com.skpijtk.springboot_boilerplate.service.AttendanceService;
@@ -68,6 +69,13 @@ public class AttendanceController {
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(attendanceService.studentCheckIn(request));
+    }
+
+    @PreAuthorize("hasRole('MAHASISWA')")
+    @PostMapping("/mahasiswa/checkout")public ResponseEntity<ApiResponse<CheckInCheckOutResponse>> studentCheckOut(@RequestBody CheckOutRequest request) {
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(attendanceService.studentCheckOut(request));
     }
 
 }

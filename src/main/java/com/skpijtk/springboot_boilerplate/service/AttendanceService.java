@@ -18,6 +18,7 @@ import com.skpijtk.springboot_boilerplate.dto.AttendanceDto;
 import com.skpijtk.springboot_boilerplate.dto.CheckInAllStudentsResponse;
 import com.skpijtk.springboot_boilerplate.dto.CheckInCheckOutResponse;
 import com.skpijtk.springboot_boilerplate.dto.CheckInRequest;
+import com.skpijtk.springboot_boilerplate.dto.CheckOutRequest;
 import com.skpijtk.springboot_boilerplate.dto.PaginationDto;
 import com.skpijtk.springboot_boilerplate.dto.ResumeCheckInResponse;
 import com.skpijtk.springboot_boilerplate.exception.IllegalArgumentException;
@@ -260,7 +261,7 @@ public class AttendanceService {
         }
 
         if (request.getNotesCheckin() == "") {
-            throw new BadRequestException("Check in failed because the Note is empty", "T-ERR-009");
+            throw new BadRequestException("Check in failed because the note is empty", "T-ERR-009");
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -299,5 +300,53 @@ public class AttendanceService {
             .statusCode(HttpStatus.OK.value())
             .build();
     }
+
+    public ApiResponse<CheckInCheckOutResponse> studentCheckOut(CheckOutRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new ResourceNotFoundException("Student data not found", "T-ERR-005"));
+
+        Student student = studentRepository.findByUser(user)
+            .orElseThrow(() -> new ResourceNotFoundException("Student data not found", "T-ERR-005"));
+
+        LocalDate today = LocalDate.now();
+        Attendance attendance = attendanceRepository.findByStudentIdAndAttendanceDate(student.getId(), today)
+            .orElseThrow(() -> new ResourceNotFoundException("Attendance not found for today", "T-ERR-005"));
+
+        if (request.getNotesCheckout() == "") {
+            throw new BadRequestException("Check out failed because the note is empty", "T-ERR-009");
+        }
+
+        if (attendance.getCheckOutTime() != null) {
+            throw new BadRequestException("You have already checked out today.", "T-ERR-010");
+        }
+
+        attendance.setCheckOutTime(LocalDateTime.now());
+        attendance.setCheckOutNotes(request.getNotesCheckout());
+        Attendance updated = attendanceRepository.save(attendance);
+
+        CheckInCheckOutResponse response = CheckInCheckOutResponse.builder()
+            .attendanceId(updated.getId())
+            .checkinTime(updated.getCheckInTime())
+            .checkOutTime(updated.getCheckOutTime())
+            .attendanceDate(updated.getAttendanceDate())
+            .notesCheckin(updated.getCheckInNotes())
+            .notesCheckout(updated.getCheckOutNotes())
+            .statusCheckin(updated.getCheckInStatus().name())
+            .studentId(student.getId())
+            .studentName(user.getName())
+            .nim(student.getNim())
+            .build();
+
+        return ApiResponse.<CheckInCheckOutResponse>builder()
+            .data(response)
+            .message("T-SUCC-002") // Checkout success
+            .status(HttpStatus.OK.name())
+            .statusCode(HttpStatus.OK.value())
+            .build();
+    }
+
     
 }
