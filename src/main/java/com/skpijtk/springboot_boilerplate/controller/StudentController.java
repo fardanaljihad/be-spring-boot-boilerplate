@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.skpijtk.springboot_boilerplate.dto.ApiResponse;
 import com.skpijtk.springboot_boilerplate.dto.CheckInAllStudentsResponse;
 import com.skpijtk.springboot_boilerplate.dto.PaginationDto;
+import com.skpijtk.springboot_boilerplate.dto.ProfileStudentResponse;
 import com.skpijtk.springboot_boilerplate.dto.RegisterStudentRequest;
 import com.skpijtk.springboot_boilerplate.dto.StudentResponse;
 import com.skpijtk.springboot_boilerplate.dto.UpdateStudentRequest;
@@ -82,6 +83,17 @@ public class StudentController {
     @DeleteMapping("/admin/mahasiswa/{id_student}")
     public ResponseEntity<ApiResponse<Object>> deleteStudent(@PathVariable("id_student") Long studentId) {
         return ResponseEntity.ok(studentService.deleteStudentById(studentId));
+    }
+
+    @PreAuthorize("hasRole('MAHASISWA')")
+    @GetMapping("/mahasiswa/profile")
+    public ResponseEntity<ApiResponse<ProfileStudentResponse>> getProfileStudent(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startdate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate enddate,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(studentService.getProfileStudent(startdate, enddate, page, size));
     }
 
 }

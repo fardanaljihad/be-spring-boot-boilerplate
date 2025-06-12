@@ -1,17 +1,25 @@
 package com.skpijtk.springboot_boilerplate.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.skpijtk.springboot_boilerplate.dto.ApiResponse;
 import com.skpijtk.springboot_boilerplate.dto.AttendanceDto;
+import com.skpijtk.springboot_boilerplate.dto.ProfileStudentResponse;
 import com.skpijtk.springboot_boilerplate.dto.RegisterStudentRequest;
 import com.skpijtk.springboot_boilerplate.dto.StudentResponse;
 import com.skpijtk.springboot_boilerplate.dto.UpdateStudentRequest;
@@ -22,6 +30,7 @@ import com.skpijtk.springboot_boilerplate.model.CheckInStatus;
 import com.skpijtk.springboot_boilerplate.model.Role;
 import com.skpijtk.springboot_boilerplate.model.Student;
 import com.skpijtk.springboot_boilerplate.model.User;
+import com.skpijtk.springboot_boilerplate.repository.AttendanceRepository;
 import com.skpijtk.springboot_boilerplate.repository.StudentRepository;
 import com.skpijtk.springboot_boilerplate.repository.UserRepository;
 
@@ -33,6 +42,7 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
+    private final AttendanceRepository attendanceRepository;
     private final PasswordEncoder passwordEncoder;
 
     public ApiResponse<StudentResponse> registerStudent(RegisterStudentRequest request) {
@@ -174,6 +184,42 @@ public class StudentService {
             .build();
 
         return response;
+    }
+
+    public ApiResponse<ProfileStudentResponse> getProfileStudent(LocalDate startDate, LocalDate endDate, int page, int size) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new ResourceNotFoundException("Data failed to display", "T-ERR-006"));
+
+        Student student = studentRepository.findByUser(user)
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found", "T-ERR-005"));
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("attendanceDate").descending());
+
+        Page<Attendance> attendancePage = attendanceRepository
+            .findByStudentIdAndAttendanceDateBetween(student.getId(), startDate, endDate, pageable);
+
+        List<AttendanceDto> attendanceData = toAttendanceDtoList(student.getAttendances());
+
+        ProfileStudentResponse dataResponse = ProfileStudentResponse.builder()
+            .studentId(student.getId())
+            .studentName(user.getName())
+            .nim(student.getNim())
+            .attendanceData(attendanceData)
+            .totalData((int) attendancePage.getTotalElements())
+            .totalPage(attendancePage.getTotalPages())
+            .currentPage(attendancePage.getNumber())
+            .pageSize(attendancePage.getSize())
+            .build();
+
+        return ApiResponse.<ProfileStudentResponse>builder()
+            .data(dataResponse)
+            .message("T-SUCC-005")
+            .statusCode(HttpStatus.OK.value())
+            .status(HttpStatus.OK.name())
+            .build();
     }
 
 }
