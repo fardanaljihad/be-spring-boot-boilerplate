@@ -152,6 +152,21 @@ public class GlobalExceptionHandler {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         }
 
+        @ExceptionHandler(IllegalArgumentException.class)
+        public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
+                        IllegalArgumentException ex, HttpServletRequest request) {
+                log.warn("Illegal argument: {} on path {}", ex.getMessage(), request.getRequestURI());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                                ex.getMessage(),
+                                ex.getMessageId(),
+                                request.getRequestURI(),
+                                null);
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+
         // @ExceptionHandler(MethodArgumentNotValidException.class)
         // public ResponseEntity<ErrorResponse> handleValidationExceptions(
         //                 MethodArgumentNotValidException ex, HttpServletRequest request) {
@@ -176,20 +191,6 @@ public class GlobalExceptionHandler {
         //                         "Validation Failed",
         //                         request.getRequestURI(),
         //                         details);
-        //         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-        // }
-
-        // @ExceptionHandler(IllegalArgumentException.class) // Catch other common exceptions
-        // public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
-        //                 IllegalArgumentException ex, HttpServletRequest request) {
-        //         log.warn("Illegal argument: {} on path {}", ex.getMessage(), request.getRequestURI());
-        //         ErrorResponse errorResponse = new ErrorResponse(
-        //                         LocalDateTime.now(),
-        //                         HttpStatus.BAD_REQUEST.value(),
-        //                         HttpStatus.BAD_REQUEST.getReasonPhrase(),
-        //                         ex.getMessage(),
-        //                         request.getRequestURI(),
-        //                         null);
         //         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         // }
 

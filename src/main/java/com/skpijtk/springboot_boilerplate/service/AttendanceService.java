@@ -14,6 +14,7 @@ import com.skpijtk.springboot_boilerplate.dto.AttendanceDto;
 import com.skpijtk.springboot_boilerplate.dto.CheckInAllStudentsResponse;
 import com.skpijtk.springboot_boilerplate.dto.PaginationDto;
 import com.skpijtk.springboot_boilerplate.dto.ResumeCheckInResponse;
+import com.skpijtk.springboot_boilerplate.exception.IllegalArgumentException;
 import com.skpijtk.springboot_boilerplate.model.Attendance;
 import com.skpijtk.springboot_boilerplate.model.CheckInStatus;
 import com.skpijtk.springboot_boilerplate.model.Student;
@@ -64,15 +65,12 @@ public class AttendanceService {
         int page,
         int size
     ) {
-
-        sortBy = switch (sortBy) {
-            case "nim" -> "student.nim";
-            case "studentName" -> "student.user.name";
-            default -> sortBy;
-        };
-
-         
+        
         Pageable pageable = PageRequest.of(page, size);
+
+        if (!"nim".equalsIgnoreCase(sortBy) && !"status".equalsIgnoreCase(sortBy)) {
+            throw new IllegalArgumentException("Data failed to display", "T-ERR-006");
+        }
 
         Specification<Attendance> spec = AttendanceSpecification.filterBy(
             studentName, startDate, endDate, sortBy, sortDir
