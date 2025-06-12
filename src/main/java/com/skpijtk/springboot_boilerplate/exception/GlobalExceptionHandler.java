@@ -172,6 +172,21 @@ public class GlobalExceptionHandler {
                 return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
 
+        @ExceptionHandler(BadRequestException.class)
+        public ResponseEntity<ErrorResponse> handleBadRequestException(
+                        BadRequestException ex, HttpServletRequest request) {
+                log.warn("Bad request: {} on path {}", ex.getMessage(), request.getRequestURI());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                                ex.getMessage(),
+                                ex.getMessageId(),
+                                request.getRequestURI(),
+                                null);
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+
         // @ExceptionHandler(MethodArgumentNotValidException.class)
         // public ResponseEntity<ErrorResponse> handleValidationExceptions(
         //                 MethodArgumentNotValidException ex, HttpServletRequest request) {

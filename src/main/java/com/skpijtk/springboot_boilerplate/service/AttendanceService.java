@@ -1,28 +1,38 @@
 package com.skpijtk.springboot_boilerplate.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.skpijtk.springboot_boilerplate.dto.ApiResponse;
 import com.skpijtk.springboot_boilerplate.dto.AttendanceDto;
 import com.skpijtk.springboot_boilerplate.dto.CheckInAllStudentsResponse;
+import com.skpijtk.springboot_boilerplate.dto.CheckInCheckOutResponse;
+import com.skpijtk.springboot_boilerplate.dto.CheckInRequest;
 import com.skpijtk.springboot_boilerplate.dto.PaginationDto;
 import com.skpijtk.springboot_boilerplate.dto.ResumeCheckInResponse;
 import com.skpijtk.springboot_boilerplate.exception.IllegalArgumentException;
 import com.skpijtk.springboot_boilerplate.exception.ResourceNotFoundException;
+import com.skpijtk.springboot_boilerplate.exception.BadRequestException;
+import com.skpijtk.springboot_boilerplate.model.AppSetting;
 import com.skpijtk.springboot_boilerplate.model.Attendance;
 import com.skpijtk.springboot_boilerplate.model.CheckInStatus;
 import com.skpijtk.springboot_boilerplate.model.Student;
 import com.skpijtk.springboot_boilerplate.model.User;
+import com.skpijtk.springboot_boilerplate.repository.AppSettingRepository;
 import com.skpijtk.springboot_boilerplate.repository.AttendanceRepository;
 import com.skpijtk.springboot_boilerplate.repository.AttendanceSpecification;
 import com.skpijtk.springboot_boilerplate.repository.StudentRepository;
+import com.skpijtk.springboot_boilerplate.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +42,8 @@ public class AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
+    private final AppSettingRepository appSettingRepository;
 
     public ApiResponse<ResumeCheckInResponse> getResumeCheckin() {
         LocalDate today = LocalDate.now();
@@ -228,6 +240,63 @@ public class AttendanceService {
             .message("T-SUCC-004")
             .statusCode(HttpStatus.OK.value())
             .status(HttpStatus.OK.name())
+            .build();
+    }
+
+    public ApiResponse<CheckInCheckOutResponse> studentCheckIn(CheckInRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new ResourceNotFoundException("Student data not found", "T-ERR-005"));
+
+        Student student = studentRepository.findByUser(user)
+            .orElseThrow(() -> new ResourceNotFoundException("Student data not found", "T-ERR-005"));
+
+        LocalDate today = LocalDate.now();
+        boolean alreadyCheckedIn = attendanceRepository.existsByStudentIdAndAttendanceDate(student.getId(), today);
+        if (alreadyCheckedIn) {
+            throw new BadRequestException("You have already checked in today.", "T-ERR-003");
+        }
+
+        if (request.getNotesCheckin() == "") {
+            throw new BadRequestException("Check in failed because the Note is empty", "T-ERR-009");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        AppSetting appSetting = appSettingRepository.findById(1)
+            .orElseThrow(() -> new ResourceNotFoundException("App setting not found", "T-ERR-004"));
+
+        LocalTime defaultCheckInTime = appSetting.getDefaultCheckInTime();
+        boolean isLate = now.toLocalTime().isAfter(defaultCheckInTime);
+        CheckInStatus status = isLate ? CheckInStatus.TERLAMBAT : CheckInStatus.TEPAT_WAKTU;
+
+        Attendance attendance = Attendance.builder()
+            .attendanceDate(today)
+            .checkInTime(now)
+            .checkInStatus(status)
+            .checkInNotes(request.getNotesCheckin())
+            .student(student)
+            .build();
+
+        Attendance savedAttendance = attendanceRepository.save(attendance);
+
+        CheckInCheckOutResponse response = CheckInCheckOutResponse.builder()
+            .attendanceId(savedAttendance.getId())
+            .checkinTime(savedAttendance.getCheckInTime())
+            .attendanceDate(savedAttendance.getAttendanceDate())
+            .notesCheckin(savedAttendance.getCheckInNotes())
+            .statusCheckin(savedAttendance.getCheckInStatus().name())
+            .studentId(student.getId())
+            .studentName(user.getName())
+            .nim(student.getNim())
+            .build();
+
+        return ApiResponse.<CheckInCheckOutResponse>builder()
+            .data(response)
+            .message(isLate ? "T-WAR-001" : "T-SUCC-007: Checkin successfully")
+            .status(HttpStatus.OK.name())
+            .statusCode(HttpStatus.OK.value())
             .build();
     }
     

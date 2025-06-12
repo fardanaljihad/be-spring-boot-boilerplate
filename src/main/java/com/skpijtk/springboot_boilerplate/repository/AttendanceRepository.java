@@ -19,5 +19,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long>, J
     Page<Attendance> findByStudentIdAndAttendanceDateBetween(
         Long studentId, LocalDate startDate, LocalDate endDate, Pageable pageable
     );
+
+    boolean existsByStudentIdAndAttendanceDate(Long studentId, LocalDate today);
     
 }
