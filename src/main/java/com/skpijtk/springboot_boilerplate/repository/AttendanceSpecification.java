@@ -71,4 +71,34 @@ public class AttendanceSpecification {
         };
     }
 
+    public static Specification<Attendance> filterBy(
+        String studentName, 
+        LocalDate startDate, 
+        LocalDate endDate
+    ) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            Join<Attendance, Student> studentJoin = root.join("student");
+            Join<Student, User> userJoin = studentJoin.join("user");
+
+            if (studentName != null && !studentName.isBlank()) {
+                predicates.add(cb.like(
+                    cb.lower(userJoin.get("name")),
+                    "%" + studentName.toLowerCase() + "%"
+                ));
+            }
+
+            if (startDate != null && endDate == null) {
+                predicates.add(cb.equal(root.get("attendanceDate"), startDate));
+            }
+
+            if (startDate != null && endDate != null) {
+                predicates.add(cb.between(root.get("attendanceDate"), startDate, endDate));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
 }
