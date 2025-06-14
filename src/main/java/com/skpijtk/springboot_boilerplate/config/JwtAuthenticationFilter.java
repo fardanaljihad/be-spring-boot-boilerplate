@@ -1,7 +1,9 @@
 package com.skpijtk.springboot_boilerplate.config;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.skpijtk.springboot_boilerplate.service.JwtService;
 
+import io.jsonwebtoken.security.SignatureException;
 import io.micrometer.common.lang.NonNull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -55,20 +58,59 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        jwt = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwt);
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails, 
-                    null, 
-                    userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+        try {
+            jwt = authHeader.substring(7);
+            userEmail = jwtService.extractUsername(jwt);
+
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+
+            filterChain.doFilter(request, response);
+
+        } catch (SignatureException ex) {
+            sendErrorResponse(
+                response, 
+                request, 
+                HttpStatus.UNAUTHORIZED, 
+                "AUTH-ERR-401", 
+                "Token authorization pada Collection dan Headers tidak sesuai. Cek kembali token di Postman, jika Anda menggunakan Postman."
+            );
+            return;
         }
-        filterChain.doFilter(request, response);
     }
+
+    private void sendErrorResponse(
+        HttpServletResponse response,
+        HttpServletRequest request,
+        HttpStatus status,
+        String errorCode,
+        String message
+    ) throws IOException {
+
+    response.setStatus(status.value());
+    response.setContentType("application/json");
+
+    String json = String.format(
+        "{ \"timestamp\": \"%s\", \"status\": %d, \"error\": \"%s\", \"message\": \"%s\", \"errorCode\": \"%s\", \"path\": \"%s\" }",
+        LocalDateTime.now(),
+        status.value(),
+        status.getReasonPhrase(),
+        message,
+        errorCode,
+        request.getRequestURI()
+    );
+
+    response.getWriter().write(json);
+}
 }

@@ -214,19 +214,20 @@ public class GlobalExceptionHandler {
         //         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         // }
 
-        // @ExceptionHandler(Exception.class)
-        // public ResponseEntity<ErrorResponse> handleAllExceptions(
-        //                 Exception ex, HttpServletRequest request) {
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ErrorResponse> handleAllExceptions(
+                        Exception ex, HttpServletRequest request) {
 
-        //         log.error("An unexpected error occurred: {} on path {}", ex.getMessage(), request.getRequestURI(), ex);
+                log.error("An unexpected error occurred: {} on path {}", ex.getMessage(), request.getRequestURI(), ex);
 
-        //         ErrorResponse errorResponse = new ErrorResponse(
-        //                         LocalDateTime.now(),
-        //                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
-        //                         HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-        //                         "An unexpected internal server error occurred.",
-        //                         request.getRequestURI(),
-        //                         null);
-        //         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-        // }
+                ErrorResponse errorResponse = new ErrorResponse(
+                                LocalDateTime.now(),
+                                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                                "An unexpected internal server error occurred.",
+                                "-",
+                                request.getRequestURI(),
+                                null);
+                return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 }
