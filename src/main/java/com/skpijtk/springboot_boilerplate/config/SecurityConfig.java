@@ -26,7 +26,13 @@ public class SecurityConfig {
         http
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/v1/admin/signup", "/api/v1/admin/login", "/api/v1/mahasiswa/login").permitAll()
+            .requestMatchers(
+                "/api/v1/admin/signup", 
+                "/api/v1/admin/login", 
+                "/api/v1/mahasiswa/login",
+                "/ws/**", 
+                "/actuator/**"
+            ).permitAll()
             .anyRequest().authenticated()
         )
         .sessionManagement(session -> session

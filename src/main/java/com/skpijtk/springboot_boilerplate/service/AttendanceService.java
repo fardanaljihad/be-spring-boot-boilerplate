@@ -23,6 +23,7 @@ import com.skpijtk.springboot_boilerplate.dto.PaginationDto;
 import com.skpijtk.springboot_boilerplate.dto.ResumeCheckInResponse;
 import com.skpijtk.springboot_boilerplate.exception.IllegalArgumentException;
 import com.skpijtk.springboot_boilerplate.exception.ResourceNotFoundException;
+import com.skpijtk.springboot_boilerplate.handler.WebSocketHandler;
 import com.skpijtk.springboot_boilerplate.exception.BadRequestException;
 import com.skpijtk.springboot_boilerplate.model.AppSetting;
 import com.skpijtk.springboot_boilerplate.model.Attendance;
@@ -45,6 +46,7 @@ public class AttendanceService {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
     private final AppSettingRepository appSettingRepository;
+    private final WebSocketHandler webSocketHandler;
 
     public ApiResponse<ResumeCheckInResponse> getResumeCheckin() {
         LocalDate today = LocalDate.now();
@@ -292,6 +294,8 @@ public class AttendanceService {
             .studentName(user.getName())
             .nim(student.getNim())
             .build();
+
+        webSocketHandler.sendNotificationToAdmins("Mahasiswa " + user.getName() + " berhasil checkin");
 
         return ApiResponse.<CheckInCheckOutResponse>builder()
             .data(response)
