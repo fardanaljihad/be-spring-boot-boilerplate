@@ -26,6 +26,18 @@ public class JwtService {
         return extractClaims(token, Claims::getSubject); // Subject is username or email
     }
 
+    public String extractRole(String token) {
+        return extractClaims(token, claims -> claims.get("role", String.class));
+    }
+
+    public Long extractUserId(String token) {
+        return extractClaims(token, claims -> claims.get("userId", Long.class));
+    }
+
+    public String extractName(String token) {
+        return extractClaims(token, claims -> claims.get("name", String.class));
+    }
+
     public <T> T extractClaims(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
